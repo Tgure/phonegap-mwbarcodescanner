@@ -9,14 +9,19 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 
-@interface MWOverlay : NSObject 
-
+@interface MWOverlay : NSObject
+enum PauseMode{
+    PM_NONE,
+    PM_PAUSE,
+    PM_STOP_BLINKING
+};
 + (void) addToPreviewLayer:(AVCaptureVideoPreviewLayer *) videoPreviewLayer;
 + (void) removeFromPreviewLayer;
 + (void) updateOverlay;
 
 //customization of overlay
 + (void) setPaused: (BOOL) paused;
++ (void) setPauseMode: (enum PauseMode) pMode;
 + (void) setViewportVisible: (BOOL) value;
 + (void) setBlinkingLineVisible: (BOOL) value;
 + (void) setViewportLineWidth: (float) value;

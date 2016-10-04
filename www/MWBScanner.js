@@ -350,6 +350,9 @@
      OverlayModeNone :    0,
      OverlayModeMW :      1,
      OverlayModeImage :   2,
+     PM_NONE :            0,
+     PM_PAUSE :           1,
+     PM_STOP_BLINKING :   2,
                
                
                
@@ -530,7 +533,27 @@
  MWBsetOverlayMode: function(overlayMode) {
     cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "setOverlayMode", [overlayMode]);
  },
- 
+/**
+* Set blinking line visible
+* Default value is true
+*/
+MWBsetBlinkingLineVisible: function(visible) {
+    cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "setBlinkingLineVisible", [visible]);
+},
+/**
+* Set pause mode
+*
+* What happens when the scanner is paused:
+*
+*   PM_NONE             - Nothing happens
+*   PM_PAUSE            - Blinking lines are replaced with a pause view
+*   PM_STOP_BLINKING    - Blinking lines stop blinking
+*
+*   Default value is PM_PAUSE
+*/
+MWBsetPauseMode: function(pauseMode) {
+    cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "setPauseMode", [pauseMode]);
+},
  /**
     * Enable or disable high resolution scanning. It's recommended to enable it when target barcodes
     * are of high density or small footprint. If device doesn't support high resolution param will be ignored
@@ -728,6 +751,14 @@ scanner.toggleZoom = function(){
 scanner.resumeScanning = function(){
     BarcodeScanner.MWBresumeScanning();
 }
+scanner.setScannerOverlayMode = function(overlayMode){
+    BarcodeScanner.MWBsetOverlayMode(overlayMode);
+}
+
+scanner.setBlinkingLineVisible = function(visible){
+    BarcodeScanner.MWBsetBlinkingLineVisible(visible);
+}
+
 
 
     //change these registration settings to match your licence keys
@@ -980,6 +1011,8 @@ scanner.scanImage = function(initMWBS,callbackMWBS,imageURI){
                   //  mwbs['MWBuseAutoRect'](false);      
                   //  mwbs['MWBuseFrontCamera'](true);
                   //  mwbs['MWBsetActiveParser'](constants.MWP_PARSER_MASK_ISBT);
+                  //  mwbs['MWBsetPauseMode'](constants.PM_NONE);
+
 
 
                                   

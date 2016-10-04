@@ -32,7 +32,7 @@ float leftP;
 float topP;
 float widthP;
 float heightP;
-AVCaptureVideoPreviewLayer *previewLayer;
+AVCaptureVideoPreviewLayer *scannerPreviewLayer;
 UIInterfaceOrientation currentOrientation;
 UIImageView *overlayImage;
 BOOL useAutoRect = true;
@@ -76,30 +76,30 @@ NSMutableDictionary *recgtVals;
         UIView *view = [[UIView alloc]initWithFrame:CGRectMake(x,y,width,height)];
         [view setTag:9158436];
         
-        previewLayer = [scannerViewController generateLayerWithRect:CGPointMake(width, height)];
+        scannerPreviewLayer = [scannerViewController generateLayerWithRect:CGPointMake(width, height)];
         
     
         
         
         
-        [view.layer addSublayer:previewLayer];
+        [view.layer addSublayer:scannerPreviewLayer];
         
         [self.viewController.view addSubview:view];
         scannerViewController.state = LAUNCHING_CAMERA;
         [scannerViewController.captureSession startRunning];
         scannerViewController.state = CAMERA;
-        [CDVMWBarcodeScanner setAutoRect:previewLayer];
-
+        [CDVMWBarcodeScanner setAutoRect:scannerPreviewLayer];
+        overlayImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width, height)];
+        overlayImage.contentMode = UIViewContentModeScaleToFill;
+        overlayImage.image = [UIImage imageNamed:@"overlay_mw.png"];
+        [view addSubview:overlayImage];
+        [overlayImage setHidden:YES];
+        
         if ([MWScannerViewController getOverlayMode] == 1) {
             [MWOverlay setPaused:NO];
-            [MWOverlay addToPreviewLayer:previewLayer];
+            [MWOverlay addToPreviewLayer:scannerPreviewLayer];
         }else if([MWScannerViewController getOverlayMode] == 2){
-
-            overlayImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width, height)];
-            overlayImage.contentMode = UIViewContentModeScaleToFill;
-            overlayImage.image = [UIImage imageNamed:@"overlay_mw.png"];
-            [view addSubview:overlayImage];
-            
+            [overlayImage setHidden:NO];
         }
         if ([MWScannerViewController isFlashEnabled]) {
             scannerViewController.flashButton = [[UIButton alloc]initWithFrame:CGRectMake(view.frame.size.width-10-35, 10, 35, 35)];
@@ -133,7 +133,7 @@ NSMutableDictionary *recgtVals;
         callbackId= command.callbackId;
 #endif
     }else{
-        [CDVMWBarcodeScanner setAutoRect:previewLayer];
+        [CDVMWBarcodeScanner setAutoRect:scannerPreviewLayer];
     }
     
 }
@@ -162,7 +162,7 @@ NSMutableDictionary *recgtVals;
     if ([self.viewController.view viewWithTag:9158436]) {
         [[self.viewController.view viewWithTag:9158436]removeFromSuperview];
         [scannerViewController stopScanning];
-        previewLayer = nil;
+        scannerPreviewLayer = nil;
         [[NSNotificationCenter defaultCenter] removeObserver:self name:@"DecoderResultNotification" object:nil];
         [[NSNotificationCenter defaultCenter] removeObserver:self name:@"UIDeviceOrientationDidChangeNotification" object:nil];
         scannerViewController = nil;
@@ -330,24 +330,24 @@ NSMutableDictionary *recgtVals;
         float height =heightP /100 *[[UIScreen mainScreen] bounds].size.height;
         
         scannerView.frame =CGRectMake(x,y,width,height);
-        [previewLayer setFrame:CGRectMake(0,0,width,height)];
+        [scannerPreviewLayer setFrame:CGRectMake(0,0,width,height)];
         
         if(currentOrientation == UIDeviceOrientationLandscapeLeft){
-            [previewLayer.connection setVideoOrientation:AVCaptureVideoOrientationLandscapeRight];
+            [scannerPreviewLayer.connection setVideoOrientation:AVCaptureVideoOrientationLandscapeRight];
         } else if (currentOrientation == UIDeviceOrientationLandscapeRight){
-            previewLayer.connection.videoOrientation = AVCaptureVideoOrientationLandscapeLeft;
+            scannerPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationLandscapeLeft;
         } else if (currentOrientation == UIDeviceOrientationPortrait){
-            previewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
+            scannerPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortrait;
         } else if (currentOrientation == UIDeviceOrientationPortraitUpsideDown){
-            previewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+            scannerPreviewLayer.connection.videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
         }
-        [CDVMWBarcodeScanner setAutoRect:previewLayer];
+        [CDVMWBarcodeScanner setAutoRect:scannerPreviewLayer];
         
         if ([MWScannerViewController getOverlayMode] == 1) {
             [MWOverlay removeFromPreviewLayer];
-            [MWOverlay addToPreviewLayer:previewLayer];
+            [MWOverlay addToPreviewLayer:scannerPreviewLayer];
         }else if([MWScannerViewController getOverlayMode] == 2){
-            [overlayImage setFrame:previewLayer.frame];
+            [overlayImage setFrame:scannerPreviewLayer.frame];
         }
         if ([MWScannerViewController isFlashEnabled] && scannerViewController.flashButton) {
             scannerViewController.flashButton.frame = CGRectMake(scannerView.frame.size.width-10-35, 10, 35, 35);
@@ -451,8 +451,38 @@ NSMutableDictionary *recgtVals;
     
 }
 
+-(void)setBlinkingLineVisible:(CDVInvokedUrlCommand*)command
+{
+    BOOL visible = [[command.arguments objectAtIndex:0] boolValue];
+    [MWOverlay setBlinkingLineVisible:visible];
+}
+
 - (void)setOverlayMode:(CDVInvokedUrlCommand*)command{
-    [MWScannerViewController setOverlayMode:[[command.arguments objectAtIndex:0] intValue]];
+    int overlayModeTmp = [[command.arguments objectAtIndex:0] intValue];
+    if ([MWScannerViewController getOverlayMode] != overlayModeTmp) {
+        
+        [MWScannerViewController setOverlayMode:overlayModeTmp];
+        if ([self.viewController.view viewWithTag:9158436]) {
+            [MWOverlay removeFromPreviewLayer];
+
+            if([MWScannerViewController getOverlayMode] == 1){
+                [MWOverlay addToPreviewLayer:scannerPreviewLayer];
+            }
+            
+            if (overlayImage) {
+                
+                if([MWScannerViewController getOverlayMode] == 2){
+                    [overlayImage setHidden:NO];
+                }else{
+                    [overlayImage setHidden:YES];
+                }
+            }
+        }else{
+            
+        }
+        
+    }
+    
 }
 
 - (void)enableHiRes:(CDVInvokedUrlCommand*)command
@@ -537,7 +567,7 @@ NSMutableDictionary *recgtVals;
     if ([self.viewController.view viewWithTag:9158436]) {
         [[self.viewController.view viewWithTag:9158436]removeFromSuperview];
         [scannerViewController stopScanning];
-        previewLayer = nil;
+        scannerPreviewLayer = nil;
         [[NSNotificationCenter defaultCenter] removeObserver:self name:@"DecoderResultNotification" object:nil];
         [[NSNotificationCenter defaultCenter] removeObserver:self name:@"UIDeviceOrientationDidChangeNotification" object:nil];
         scannerViewController = nil;
@@ -561,6 +591,23 @@ NSMutableDictionary *recgtVals;
         if ([MWScannerViewController getOverlayMode] == 1) {
             [MWOverlay setPaused:NO];
         }
+    }
+}
+-(void) setPauseMode:(CDVInvokedUrlCommand*)command
+{
+    int pauseMode = [[command.arguments objectAtIndex:0] intValue];
+    switch (pauseMode) {
+        case 0:
+        [MWOverlay setPauseMode:PM_NONE];
+        break;
+        case 1:
+        [MWOverlay setPauseMode:PM_PAUSE];
+        break;
+        case 2:
+        [MWOverlay setPauseMode:PM_STOP_BLINKING];
+        break;
+        default:
+        break;
     }
 }
 - (void)scanImage:(CDVInvokedUrlCommand*)command

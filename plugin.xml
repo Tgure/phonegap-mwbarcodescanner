@@ -72,8 +72,12 @@
    <!-- ios -->
     <platform name="ios">
      
-     
-        <config-file target="config.xml" parent="/*">
+        <!-- Camera Usage Description for iOS 10+ -->
+        <config-file target="*-Info.plist" parent="NSCameraUsageDescription">
+            <string>Required for Scanning</string>
+        </config-file>
+
+         <config-file target="config.xml" parent="/*">
             <feature name="MWBarcodeScanner">
                 <param name="ios-package" value="CDVMWBarcodeScanner" />
             </feature>

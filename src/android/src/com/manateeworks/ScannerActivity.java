@@ -2,6 +2,7 @@ package com.manateeworks;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -29,6 +30,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.TimerTask;
 
 public class ScannerActivity extends Activity implements SurfaceHolder.Callback {
 
@@ -45,6 +47,7 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
     // private byte[] lastResult;
     private boolean hasSurface;
     public static CallbackContext cbc;
+    private static Context mContext;
 
     public static int param_Orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
     public static boolean param_EnableHiRes = true;
@@ -63,12 +66,13 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
     public static int secondZoom = 300;
     public static int param_maxThreads = 4;
 
-    private ImageView overlayImage;
+    private static ImageView overlayImage;
     private ImageButton buttonFlash;
     private ImageButton buttonZoom;
 
     private String package_name;
     private Resources resources;
+    private static SurfaceView surfaceView;
 
     static boolean flashOn = false;
 
@@ -89,6 +93,7 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = this;
 
         if (param_Orientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
             setRequestedOrientation(param_Orientation);
@@ -141,6 +146,40 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
 
     }
 
+    public static void refreshOverlay() {
+
+        if (mContext != null) {
+            ((Activity) mContext).runOnUiThread(new TimerTask() {
+                @Override
+                public void run() {
+                    if (surfaceView != null) {
+
+                        if (MWOverlay.isAttached) {
+                            MWOverlay.removeOverlay();
+                        }
+
+                        if ((param_OverlayMode & OM_MW) > 0) {
+                            MWOverlay.addOverlay(mContext, surfaceView);
+                        }
+
+                        if ((param_OverlayMode & OM_IMAGE) > 0) {
+                            if (overlayImage != null) {
+                                overlayImage.setVisibility(View.VISIBLE);
+                            }
+
+                        } else {
+                            if (overlayImage != null) {
+                                overlayImage.setVisibility(View.GONE);
+                            }
+                        }
+                    }
+                }
+            });
+
+        }
+
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -149,7 +188,7 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
             if (buttonZoom != null) {
                 buttonZoom.setVisibility(View.GONE);
             }
-            SurfaceView surfaceView = (SurfaceView) findViewById(resources.getIdentifier("preview_view", "id", package_name));
+            surfaceView = (SurfaceView) findViewById(resources.getIdentifier("preview_view", "id", package_name));
             SurfaceHolder surfaceHolder = surfaceView.getHolder();
 
             if ((param_OverlayMode & OM_MW) > 0) {
@@ -204,7 +243,7 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
     @Override
     protected void onPause() {
         super.onPause();
-        if (!requestingOrientation){
+        if (!requestingOrientation) {
 
             flashOn = false;
             updateFlash();
@@ -218,6 +257,10 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
             CameraManager.get().closeDriver();
             state = State.STOPPED;
         }
+
+        surfaceView = null;
+        overlayImage = null;
+        mContext = null;
 
     }
 
@@ -638,10 +681,11 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
 
             if (result.locationPoints != null) {
                 jsonResult.put("location",
-                        new JSONObject().put("p1", new JSONObject().put("x", result.locationPoints.p1.x).put("y", result.locationPoints.p1.y))
-                                .put("p2", new JSONObject().put("x", result.locationPoints.p2.x).put("y", result.locationPoints.p2.y))
-                                .put("p3", new JSONObject().put("x", result.locationPoints.p3.x).put("y", result.locationPoints.p3.y))
-                                .put("p4", new JSONObject().put("x", result.locationPoints.p4.x).put("y", result.locationPoints.p4.y)));
+                               new JSONObject().put("p1", new JSONObject().put("x", result.locationPoints.p1.x).put("y", result.locationPoints.p1.y))
+                                               .put("p2", new JSONObject().put("x", result.locationPoints.p2.x).put("y", result.locationPoints.p2.y))
+                                               .put("p3", new JSONObject().put("x", result.locationPoints.p3.x).put("y", result.locationPoints.p3.y))
+                                               .put("p4",
+                                                    new JSONObject().put("x", result.locationPoints.p4.x).put("y", result.locationPoints.p4.y)));
             } else {
                 jsonResult.put("location", false);
             }

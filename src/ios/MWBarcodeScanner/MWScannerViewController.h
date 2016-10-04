@@ -95,6 +95,8 @@ typedef enum eMainScreenState {
 + (void) use60fps: (BOOL) use;
 + (void) setUseFrontCamera: (BOOL) use;
 
+- (void)refreshOverlay;
+    
 - (void)revertToNormal;
 - (void)decodeResultNotification: (NSNotification *)notification;
 - (void)initCapture;

@@ -303,6 +303,28 @@ static NSString *DecoderResultNotification = @"DecoderResultNotification";
 {
     useFrontCamera = use;
 }
+    
+    -(void)refreshOverlay
+    {
+        dispatch_async(dispatch_get_main_queue(), ^(void) {
+            
+            [MWOverlay removeFromPreviewLayer];
+            
+            if(param_OverlayMode == 1){
+                [MWOverlay addToPreviewLayer:self.prevLayer];
+            }
+            
+            if (cameraOverlay) {
+                
+                if([MWScannerViewController getOverlayMode] == 2){
+                    [cameraOverlay setHidden:NO];
+                }else{
+                    [cameraOverlay setHidden:YES];
+                }
+            }
+            
+        });
+    }
 
 + (void) setZoomLevels: (int) zoomLevel1 zoomLevel2: (int) zoomLevel2 initialZoomLevel: (int) initialZoomLevel {
     

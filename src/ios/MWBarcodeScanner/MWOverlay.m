@@ -23,6 +23,7 @@ BOOL isAttached = NO;
 BOOL isViewportVisible = YES;
 BOOL isBlinkingLineVisible = YES;
 
+enum PauseMode pauseMode = PM_PAUSE;
 
 MWOverlay *instance = nil;
 
@@ -108,13 +109,19 @@ BOOL isPaused = NO;
     
 }
 
-+ (void) setPaused: (BOOL) paused{
-    isPaused = paused;
-    if (instance != nil && previewLayer != nil && lineLayer != nil){
-       [instance performSelectorOnMainThread:@selector(updateOverlayMainThread) withObject:nil waitUntilDone:NO];
++ (void) setPaused: (BOOL) paused
+{
+    if (isPaused != paused) {
+        isPaused = paused;
+        if (instance != nil && previewLayer != nil && lineLayer != nil){
+            [instance performSelectorOnMainThread:@selector(updateOverlayMainThread) withObject:nil waitUntilDone:NO];
+        }
     }
 }
-
++ (void) setPauseMode: (enum PauseMode) pMode
+{
+    pauseMode = pMode;
+}
 - (void) checkForChanges {
     
     if (isAttached){
@@ -293,7 +300,7 @@ BOOL isPaused = NO;
         orientation = orientation | mask;
         
     }
-    if (isPaused){
+    if (isPaused && pauseMode == PM_PAUSE){
         CGContextSetRGBFillColor(context, r, g, b, 1);
         float size = MIN(overlayHeight, overlayWidth) / 10;
         CGContextFillRect(context, CGRectMake(rect.origin.x + rect.size.width / 2 - size / 2, rect.origin.y + rect.size.height / 2 - size / 2, size / 3, size));
@@ -332,8 +339,12 @@ BOOL isPaused = NO;
     
     UIGraphicsEndImageContext();
     
-    [MWOverlay startLineAnimation];
     
+    if(isPaused && pauseMode == PM_STOP_BLINKING){
+        [lineLayer removeAllAnimations];
+    }else{
+        [MWOverlay startLineAnimation];
+    }
     
 }
 
@@ -442,6 +453,7 @@ BOOL isPaused = NO;
 + (void) setBlinkingLineVisible: (BOOL) value {
     
     isBlinkingLineVisible = value;
+    [MWOverlay updateOverlay];
     
 }
 
