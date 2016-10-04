@@ -105,18 +105,12 @@ Guide on how to add the Manatee Works Barcode Scanner SDK PhoneGap plugin to you
 
 * Example:   
 
-        <form style="width: 100%; text-align: center;">
-                <input type="button" value="Scan fullscreen" onclick="scanner.startScanning()" style="font-size: 12px; width: 105px; height: 30px; margin-top: 10px;"/>
-                <input type="button" value="Scan in view" onclick="scanner.startScanning(0,4,100,50)" style="font-size: 12px; width: 105px; height: 30px; margin-top: 10px;"/>
-                <input type="button" value="Pause/Resume" onclick="scanner.togglePauseResume()" style="font-size: 12px; width: 105px; height: 30px; margin-top: 10px;"/>
-                <input type="button" value="Close" onclick="scanner.closeScanner()" style="font-size: 12px; width: 105px; height: 30px; margin-top: 10px;"/>
-                <input type="button" value="Flash" onclick="scanner.toggleFlash()" style="font-size: 12px; width: 105px; height: 30px; margin-top: 10px;"/>
-                <input type="button" value="Zoom" onclick="scanner.toggleZoom()" style="font-size: 12px; width: 105px; height: 30px; margin-top: 10px;"/>
-            </form>
-            <ul id="mwb_list">
-                
-            </ul>
-	   </br>
+        Scan fullscreen  -  scanner.startScanning()
+        Scan in view     -  scanner.startScanning(0,4,100,50)
+        Pause/Resume     -  scanner.togglePauseResume()
+        Close            -  scanner.closeScanner()
+        Flash            -  scanner.toggleFlash()
+        Zoom             -  scanner.toggleZoom()
         
         
 ##Important change in 2.0
