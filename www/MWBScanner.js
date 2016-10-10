@@ -1,5 +1,5 @@
 /*
-    Version 2.0
+    Version 2.0.2
 
     - Decoding library updated to 3.0
     - The registration functions have been revamped. License credentials issued prior to version 3.0 will no longer work with this and future releases.
