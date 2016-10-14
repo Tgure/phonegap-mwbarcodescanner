@@ -1305,7 +1305,7 @@ public class BarcodeScannerPlugin extends CordovaPlugin implements SurfaceHolder
                 public void run() {
                     if (ScannerActivity.param_OverlayMode == ScannerActivity.OM_MW) {
                         MWOverlay.removeOverlay();
-                    } else if (ScannerActivity.param_OverlayMode == ScannerActivity.OM_IMAGE) {
+                    } else if (ScannerActivity.param_OverlayMode == ScannerActivity.OM_IMAGE && overlayImage != null) {
                         rlSurfaceContainer.removeView(overlayImage);
                     }
                     CameraManager.get().stopPreview();
