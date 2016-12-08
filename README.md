@@ -27,19 +27,19 @@ Guide on how to add the Manatee Works Barcode Scanner SDK PhoneGap plugin to you
 
 	or   
 
-	    phonegap local plugin add https://github.com/manateeworks/phonegap-mwbarcodescanner.git
+	    phonegap plugin add https://github.com/manateeworks/phonegap-mwbarcodescanner.git
 	or   
 
-	    phonegap local plugin add LOCAL_PATH_TO_THE_FOLDER_WITH_PLUGIN (if you are adding from local folder)   
+	    phonegap plugin add LOCAL_PATH_TO_THE_FOLDER_WITH_PLUGIN (if you are adding from local folder)   
 	or  install using plugman: (your platform should be already built)
     
 	    plugman install --platform ios|android --project platforms/ios|platforms/android --plugin com.manateeworks.barcodescanner --plugins_dir plugins/ --www www/ 
     
 * Perform initial build for each platform (repeat the command twice if not working after first time, seems there's a bug in phonegap 3.3)
 
-        phonegap local build ios
-        phonegap local build android
-        phonegap local build wp8
+        phonegap build ios
+        phonegap build android
+        phonegap build wp8
 
 * Add a button to index.html which will call the scanner:
 
@@ -398,6 +398,26 @@ Add a notification plugin (if not already present):
 
 
 * (Optional): You can replace our default overlay_mw.png for the camera screen with your own customized image;
+
+&nbsp;
+###Changes in 2.1:
+&nbsp;
+- Pause mode
+- Resize option
+- Bug fixes
+- Decoder updated to 3.1.0:
+  - Added support for three additional Code 25 variants: Matrix, COOP, and Inverted
+  - Added support for MaxiCode symbology
+  - Added support for Micro QR symbology
+  - Added support for POSTNET, PLANET, IMB, and Royal Mail postal codes
+  - Added support for Kanji for both Standard and Micro QR codes
+  - Added support for GS1 DotCode
+  - Added Structured Carrier Message (MaxiCode) to Parser Plugin.
+  - Greatly improved decoding performance for low-light or unevenly lit barcodes
+  - Improved Direct Part Marking (DPM) detection for Data Matrix barcodes
+  - Improved performance of the PDF417 decoder
+  - Improved performance of the Data Matrix decoder
+  - Improved performance for Code 25 detection
 
 &nbsp;
 ###Changes in 2.0:

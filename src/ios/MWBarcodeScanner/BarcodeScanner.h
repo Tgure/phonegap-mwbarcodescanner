@@ -78,7 +78,7 @@ typedef unsigned char uint8_t;
     
 /** @brief  Global decoder flags value: fail 1D decode if result is not confirmed by location expanding (Code128, Code93, Code39 supported)
   */
-#define  MWB_CFG_GLOBAL_VEIRIFY_1D_LOCATION             0x20
+#define  MWB_CFG_GLOBAL_VERIFY_1D_LOCATION             0x20
     
 /** @brief  Global decoder flags value: fail decode if result is not touching the center of viewfinder (2D + Code128, Code93, Code39 supported)
  * 1D locaiton flags will be enabled automatically with this one
@@ -183,6 +183,8 @@ typedef unsigned char uint8_t;
 #define MWB_CODE_MASK_DOTCODE               0x00000800u
 #define MWB_CODE_MASK_11                    0x00001000u
 #define MWB_CODE_MASK_MSI                   0x00002000u
+#define MWB_CODE_MASK_MAXICODE              0x00004000u
+#define MWB_CODE_MASK_POSTAL                0x00008000u
 #define MWB_CODE_MASK_ALL                   0x00ffffffu
 /** @} */
 
@@ -196,12 +198,33 @@ typedef unsigned char uint8_t;
 /** @} */
     
 /**
+ * @name Bit mask identifiers for QR decoder types
+ * @{ */
+#define MWB_SUBC_MASK_QR_STANDARD       0x00000001u
+#define MWB_SUBC_MASK_QR_MICRO          0x00000002u
+/** @} */
+    
+/**
  * @name Bit mask identifiers for 2 of 5 decoder types
  * @{ */
 #define MWB_SUBC_MASK_C25_INTERLEAVED   0x00000001u
 #define MWB_SUBC_MASK_C25_STANDARD      0x00000002u
 #define MWB_SUBC_MASK_C25_ITF14         0x00000004u
 #define MWB_SUBC_MASK_C25_IATA          0x00000008u
+#define MWB_SUBC_MASK_C25_MATRIX        0x00000010u
+#define MWB_SUBC_MASK_C25_COOP          0x00000020u
+#define MWB_SUBC_MASK_C25_INVERTED      0x00000040u
+/** @} */
+    
+    
+/**
+* @name Bit mask identifiers for POSTAL decoder types
+* @{ */
+#define MWB_SUBC_MASK_POSTAL_POSTNET    0x00000001u
+#define MWB_SUBC_MASK_POSTAL_PLANET     0x00000002u
+#define MWB_SUBC_MASK_POSTAL_IM         0x00000004u
+#define MWB_SUBC_MASK_POSTAL_ROYAL      0x00000008u
+
 /** @} */
     
 /**
@@ -211,6 +234,7 @@ typedef unsigned char uint8_t;
 #define MWB_SUBC_MASK_EANUPC_EAN_8      0x00000002u
 #define MWB_SUBC_MASK_EANUPC_UPC_A      0x00000004u
 #define MWB_SUBC_MASK_EANUPC_UPC_E      0x00000008u
+#define MWB_SUBC_MASK_EANUPC_UPC_E1     0x00000010u
 /** @} */
 
 /**
@@ -220,6 +244,7 @@ typedef unsigned char uint8_t;
 #define MWB_SCANDIRECTION_VERTICAL      0x00000002u
 #define MWB_SCANDIRECTION_OMNI          0x00000004u
 #define MWB_SCANDIRECTION_AUTODETECT    0x00000008u
+
 /** @} */
     
 
@@ -252,6 +277,16 @@ enum res_types {
     FOUND_11,
     FOUND_MSI,
     FOUND_25_IATA,
+    FOUND_25_MATRIX,
+    FOUND_25_COOP,
+    FOUND_25_INVERTED,
+    FOUND_QR_MICRO,
+    FOUND_MAXICODE,
+    FOUND_POSTNET,
+    FOUND_PLANET,
+    FOUND_IMB,
+    FOUND_ROYALMAIL
+    
 };
 /** @} */
     
@@ -291,6 +326,7 @@ enum res_types {
 #define MWB_RESULT_FT_MODULE_SIZE_X         0x0000000Du
 #define MWB_RESULT_FT_MODULE_SIZE_Y         0x0000000Eu
 #define MWB_RESULT_FT_SKEW                  0x0000000Fu
+#define MWB_RESULT_FT_KANJI                 0x00000010u
     
     
 
@@ -305,6 +341,7 @@ enum res_types {
 #define MWB_RESULT_FNAME_SUBTYPE            "Subtype"
 #define MWB_RESULT_FNAME_SUCCESS            "Success"
 #define MWB_RESULT_FNAME_ISGS1              "GS1 compliance"
+#define MWB_RESULT_FNAME_KANJI              "Kanji encoding"
 #define MWB_RESULT_FNAME_LOCATION           "Location"
 #define MWB_RESULT_FNAME_IMAGE_WIDTH        "Image Width"
 #define MWB_RESULT_FNAME_IMAGE_HEIGHT       "Image Height"
@@ -658,7 +695,7 @@ extern void MWB_setDuplicate(uint8_t* barcode, int length);
  * @retval      > 0                     Number of points in buffer
  */
 //extern int MWB_getPointsQR(float *buffer, int maxLength);
-//extern int MWB_getPointsAZTEC(float *buffer, int maxLength);
+extern int MWB_getPointsAZTEC(float *buffer, int maxLength);
     
 #ifdef __cplusplus
 }

@@ -281,6 +281,8 @@ namespace BarcodeScanners
                         //Scanner.MWB_CODE_MASK_DOTCODE |
                                               Scanner.MWB_CODE_MASK_11 |
                                               Scanner.MWB_CODE_MASK_MSI |
+                                              Scanner.MWB_CODE_MASK_MAXICODE |
+                                              Scanner.MWB_CODE_MASK_POSTAL |
                                               Scanner.MWB_CODE_MASK_RSS);
                     // Our sample app is configured by default to search both directions...
                     Scanner.MWBsetDirection((uint)(Scanner.MWB_SCANDIRECTION_HORIZONTAL | Scanner.MWB_SCANDIRECTION_VERTICAL));
@@ -300,8 +302,10 @@ namespace BarcodeScanners
                     MWBsetScanningRect(Scanner.MWB_CODE_MASK_DOTCODE, RECT_DOTCODE);
                     MWBsetScanningRect(Scanner.MWB_CODE_MASK_11, RECT_FULL_1D);
                     MWBsetScanningRect(Scanner.MWB_CODE_MASK_MSI, RECT_FULL_1D);
-                
-                }
+                    MWBsetScanningRect(Scanner.MWB_CODE_MASK_MAXICODE, RECT_FULL_2D);
+                    MWBsetScanningRect(Scanner.MWB_CODE_MASK_POSTAL, RECT_FULL_1D);
+
+            }
 
                 // But for better performance, only activate the symbologies your application requires...
                 // Scanner.MWBsetActiveCodes( Scanner.MWB_CODE_MASK_25 ); 
@@ -405,9 +409,18 @@ namespace BarcodeScanners
                 if (result.type == Scanner.FOUND_11) typeName = "Code 11";
                 if (result.type == Scanner.FOUND_MSI) typeName = "MSI Plessey";
 			    if (result.type == Scanner.FOUND_25_IATA) typeName = "IATA Code 25";
+                if(result.type == Scanner.FOUND_25_MATRIX) typeName = "Code 2/5 Matrix";
+                if (result.type == Scanner.FOUND_25_COOP) typeName = "Code 2/5 COOP";
+                if (result.type == Scanner.FOUND_25_INVERTED) typeName = "Code 2/5 Inverted";
+                if (result.type == Scanner.FOUND_QR_MICRO) typeName = "QR Micro";
+                if (result.type == Scanner.FOUND_MAXICODE) typeName = "Maxicode";
+                if (result.type == Scanner.FOUND_POSTNET) typeName = "Postnet";
+                if (result.type == Scanner.FOUND_PLANET) typeName = "Planet";
+                if (result.type == Scanner.FOUND_IMB) typeName = "Intelligent mail";
+                if (result.type == Scanner.FOUND_ROYALMAIL) typeName = "Royal mail";
 
-              
-                return typeName;
+
+            return typeName;
             }
 
             static public Byte[] BufferFromImage(BitmapImage imageSource)

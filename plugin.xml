@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="manateeworks-barcodescanner"
-    version="2.0.2">
+    version="2.1.0">
     <name>MWBarcodeScanner</name>
     <description>Manatee Works Barcode Scanner Plugin</description>
     <license>MIT</license>
@@ -87,7 +87,8 @@
         <framework src="CoreGraphics.framework" weak="false" />
         <framework src="QuartzCore.framework" weak="false" />
         <framework src="CoreLocation.framework" weak="false" />
-               
+                       
+       <source-file src="src/ios/MWBarcodeScanner/libBarcodeScanner.a" target-dir="MWBarcodeScanner" framework="true"/>
         <header-file src="src/ios/CDVMWBarcodeScanner.h" target-dir="MWBarcodeScanner"/>
         <source-file src="src/ios/CDVMWBarcodeScanner.m" target-dir="MWBarcodeScanner"/>
         <header-file src="src/ios/MWBarcodeScanner/BarcodeScanner.h" target-dir="MWBarcodeScanner"/>
@@ -98,7 +99,6 @@
         <header-file src="src/ios/MWBarcodeScanner/MWResult.h" target-dir="MWBarcodeScanner"/>
         <source-file src="src/ios/MWBarcodeScanner/MWParser.h" target-dir="MWBarcodeScanner"/>
         <source-file src="src/ios/MWBarcodeScanner/MWScannerViewController.xib" target-dir="MWBarcodeScanner"/>
-        <source-file src="src/ios/MWBarcodeScanner/libBarcodeScanner.a" target-dir="MWBarcodeScanner" framework="true"/>
         
         <resource-file src="src/ios/MWBarcodeScanner/close_button.png" target-dir="MWBarcodeScanner"/>
         <resource-file src="src/ios/MWBarcodeScanner/flashbuttonon.png" target-dir="MWBarcodeScanner"/>

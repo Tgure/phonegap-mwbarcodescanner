@@ -664,6 +664,32 @@ public class ScannerActivity extends Activity implements SurfaceHolder.Callback 
             case BarcodeScanner.FOUND_25_IATA:
                 typeName = "IATA Code 25";
                 break;
+            case BarcodeScanner.FOUND_25_MATRIX:
+                typeName = "25 Matrix";
+                break;
+            case BarcodeScanner.FOUND_25_COOP:
+                typeName = "25 Coop";
+                break;
+            case BarcodeScanner.FOUND_25_INVERTED:
+                typeName = "25 Inverted";
+                break;
+            case BarcodeScanner.FOUND_QR_MICRO:
+                typeName = "QR Micro";
+                break;
+            case BarcodeScanner.FOUND_MAXICODE:
+                typeName = "Maxicode";
+                break;
+            case BarcodeScanner.FOUND_POSTNET:
+                typeName = "Postnet";
+                break;
+            case BarcodeScanner.FOUND_PLANET:
+                typeName = "Planet";
+                break;
+            case BarcodeScanner.FOUND_IMB:
+                typeName = "IMB";
+                break;
+            case BarcodeScanner.FOUND_ROYALMAIL:
+                typeName = "Royal Mail";
         }
 
         if (result.locationPoints != null && CameraManager.get().getCurrentResolution() != null && ScannerActivity.param_OverlayMode == 1) {

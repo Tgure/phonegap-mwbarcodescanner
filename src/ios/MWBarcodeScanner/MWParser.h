@@ -39,6 +39,7 @@ extern "C" {
 #define MWP_PARSER_MASK_ISBT                0x00000004u
 #define MWP_PARSER_MASK_AAMVA         		0x00000008u
 #define MWP_PARSER_MASK_HIBC         		0x00000010u
+#define MWP_PARSER_MASK_SCM         		0x00000020u
 /** @} */
 
     
@@ -86,9 +87,24 @@ extern "C" {
 #define AAMVA_ERROR_INVALID_HEADER    	       -2
 #define AAMVA_ERROR_INVALID_IIN      	       -3
 #define NOT_ENOUGHT_MEMORY                     -4
+#define AAMVA_ERROR_INVALID_JN      	       -5
+#define AAMVA_ERROR_INVALID_NENTIRES  	       -6
+
 
 //AAMVA PARSER WARNING CODES
 #define AAMVA_WARNING_MISSING_MANDATORY_FIELDS  1
+
+
+//UPS/SCM PARSER ERROR CODES
+#define SCM_ERROR_INVALID_FORMAT			-1
+#define SCM_ERROR_INVALID_CODE				-2
+#define SCM_ERROR_ELEMENT_NOT_FOUND			-3
+#define SCM_ERROR_CANT_ALLOCATE_MEMORY		-4
+
+//UPS/SCM PARSER WARNING CODES
+#define SCM_WARNING_LENGTH_OUT_OF_BOUNDS		1		//possible compression used by UPS
+#define SCM_WARNING_FIELD_EXCEEDS_MAX_LENGTH	2		//possible compression used by UPS
+#define SCM_WARNING_INVALID_TERMINATOR			3		//possible compression used by UPS
 
 
 /**

@@ -21,7 +21,7 @@
 
 
 UIInterfaceOrientationMask param_Orientation = UIInterfaceOrientationMaskPortrait;
-UIInterfaceOrientationMask param_activeParser = MWP_PARSER_MASK_NONE;
+int param_activeParser = MWP_PARSER_MASK_NONE;
 
 BOOL param_EnableHiRes = YES;
 BOOL param_EnableFlash = YES;
@@ -83,23 +83,6 @@ static NSString *DecoderResultNotification = @"DecoderResultNotification";
 
 
 + (void) initDecoder {
-    //You can now register codes from MWBScanner.js!
-    
-    /* MWB_registerCode(MWB_CODE_MASK_39,      "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_93,      "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_25,      "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_128,     "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_AZTEC,   "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_DM,      "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_EANUPC,  "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_QR,      "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_PDF,     "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_RSS,     "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_CODABAR, "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_11,      "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_MSI,     "username", "key");
-     MWB_registerCode(MWB_CODE_MASK_DOTCODE, "username", "key");*/
-    
     
     // choose code type or types you want to search for
     
@@ -116,23 +99,10 @@ static NSString *DecoderResultNotification = @"DecoderResultNotification";
                        MWB_CODE_MASK_CODABAR|
                        MWB_CODE_MASK_11     |
                        MWB_CODE_MASK_MSI    |
-                       MWB_CODE_MASK_RSS);
+                       MWB_CODE_MASK_RSS    |
+                       MWB_CODE_MASK_MAXICODE|
+                       MWB_CODE_MASK_POSTAL);
     
-    // But for better performance, only activate the symbologies your application requires...
-    // MWB_setActiveCodes( MWB_CODE_MASK_25 );
-    // MWB_setActiveCodes( MWB_CODE_MASK_39 );
-    // MWB_setActiveCodes( MWB_CODE_MASK_93 );
-    // MWB_setActiveCodes( MWB_CODE_MASK_128 );
-    // MWB_setActiveCodes( MWB_CODE_MASK_AZTEC );
-    // MWB_setActiveCodes( MWB_CODE_MASK_DM );
-    // MWB_setActiveCodes( MWB_CODE_MASK_EANUPC );
-    // MWB_setActiveCodes( MWB_CODE_MASK_PDF );
-    // MWB_setActiveCodes( MWB_CODE_MASK_QR );
-    // MWB_setActiveCodes( MWB_CODE_MASK_RSS );
-    // MWB_setActiveCodes( MWB_CODE_MASK_CODABAR );
-    // MWB_setActiveCodes( MWB_CODE_MASK_DOTCODE );
-    // MWB_setActiveCodes( MWB_CODE_MASK_11 );
-    // MWB_setActiveCodes( MWB_CODE_MASK_MSI );
     
     
     // Our sample app is configured by default to search both directions...
@@ -152,45 +122,9 @@ static NSString *DecoderResultNotification = @"DecoderResultNotification";
     MWB_setScanningRect(MWB_CODE_MASK_DOTCODE,RECT_DOTCODE);
     MWB_setScanningRect(MWB_CODE_MASK_11,     RECT_FULL_1D);
     MWB_setScanningRect(MWB_CODE_MASK_MSI,    RECT_FULL_1D);
-    
-    
-    // But for better performance, set like this for PORTRAIT scanning...
-    // MWB_setDirection(MWB_SCANDIRECTION_VERTICAL);
-    // set the scanning rectangle based on scan direction(format in pct: x, y, width, height)
-    // MWB_setScanningRect(MWB_CODE_MASK_25,     RECT_PORTRAIT_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_39,     RECT_PORTRAIT_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_93,     RECT_PORTRAIT_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_128,    RECT_PORTRAIT_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_AZTEC,  RECT_PORTRAIT_2D);
-    // MWB_setScanningRect(MWB_CODE_MASK_DM,     RECT_PORTRAIT_2D);
-    // MWB_setScanningRect(MWB_CODE_MASK_EANUPC, RECT_PORTRAIT_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_PDF,    RECT_PORTRAIT_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_QR,     RECT_PORTRAIT_2D);
-    // MWB_setScanningRect(MWB_CODE_MASK_RSS,    RECT_PORTRAIT_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_CODABAR,RECT_PORTRAIT_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_DOTCODE,RECT_DOTCODE);
-    // MWB_setScanningRect(MWB_CODE_MASK_11,     RECT_PORTRAIT_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_MSI,    RECT_PORTRAIT_1D);
-    
-    // or like this for LANDSCAPE scanning - Preferred for dense or wide codes...
-    // MWB_setDirection(MWB_SCANDIRECTION_HORIZONTAL);
-    // set the scanning rectangle based on scan direction(format in pct: x, y, width, height)
-    // MWB_setScanningRect(MWB_CODE_MASK_25,     RECT_LANDSCAPE_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_39,     RECT_LANDSCAPE_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_93,     RECT_LANDSCAPE_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_128,    RECT_LANDSCAPE_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_AZTEC,  RECT_LANDSCAPE_2D);
-    // MWB_setScanningRect(MWB_CODE_MASK_DM,     RECT_LANDSCAPE_2D);
-    // MWB_setScanningRect(MWB_CODE_MASK_EANUPC, RECT_LANDSCAPE_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_PDF,    RECT_LANDSCAPE_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_QR,     RECT_LANDSCAPE_2D);
-    // MWB_setScanningRect(MWB_CODE_MASK_RSS,    RECT_LANDSCAPE_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_CODABAR,RECT_LANDSCAPE_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_DOTCODE,RECT_DOTCODE);
-    // MWB_setScanningRect(MWB_CODE_MASK_11,     RECT_LANDSCAPE_1D);
-    // MWB_setScanningRect(MWB_CODE_MASK_MSI,    RECT_LANDSCAPE_1D);
-    
-    
+    MWB_setScanningRect(MWB_CODE_MASK_MAXICODE,RECT_FULL_2D);
+    MWB_setScanningRect(MWB_CODE_MASK_POSTAL, RECT_FULL_1D);
+
     // set decoder effort level (1 - 5)
     // for live scanning scenarios, a setting between 1 to 3 will suffice
     // levels 4 and 5 are typically reserved for batch scanning
@@ -1082,23 +1016,26 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
                     
                     switch (param_activeParser) {
                         case MWP_PARSER_MASK_GS1:
-                        parserMask = @"GS1";
-                        break;
+                            parserMask = @"GS1";
+                            break;
                         case MWP_PARSER_MASK_IUID:
-                        parserMask = @"IUID";
-                        break;
+                            parserMask = @"IUID";
+                            break;
                         case MWP_PARSER_MASK_ISBT:
-                        parserMask = @"ISBT";
-                        break;
+                            parserMask = @"ISBT";
+                            break;
                         case MWP_PARSER_MASK_AAMVA:
-                        parserMask = @"AAMVA";
-                        break;
+                            parserMask = @"AAMVA";
+                            break;
                         case MWP_PARSER_MASK_HIBC:
-                        parserMask = @"HIBC";
-                        break;
+                            parserMask = @"HIBC";
+                            break;
+                        case MWP_PARSER_MASK_SCM:
+                            parserMask = @"SCM";
+                            break;
                         default:
-                        parserMask = @"Unknown";
-                        break;
+                            parserMask = @"Unknown";
+                            break;
                     }
                     
                     mwResult.typeName = [NSString stringWithFormat:@"%@ (%@)", mwResult.typeName, parserMask];

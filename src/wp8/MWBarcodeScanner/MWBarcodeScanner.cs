@@ -573,6 +573,10 @@ namespace Cordova.Extension.Commands
                              Convert.ToInt32(p1y * 100), Convert.ToInt32(p2x * 100), Convert.ToInt32(p2y * 100));
             Scanner.MWBsetScanningRect(Convert.ToInt32(Scanner.MWB_CODE_MASK_MSI), Convert.ToInt32(p1x * 100),
                              Convert.ToInt32(p1y * 100), Convert.ToInt32(p2x * 100), Convert.ToInt32(p2y * 100));
+            Scanner.MWBsetScanningRect(Convert.ToInt32(Scanner.MWB_CODE_MASK_MAXICODE), Convert.ToInt32(p1x * 100),
+                                Convert.ToInt32(p1y * 100), Convert.ToInt32(p2x * 100), Convert.ToInt32(p2y * 100));
+            Scanner.MWBsetScanningRect(Convert.ToInt32(Scanner.MWB_CODE_MASK_POSTAL), Convert.ToInt32(p1x * 100),
+                                Convert.ToInt32(p1y * 100), Convert.ToInt32(p2x * 100), Convert.ToInt32(p2y * 100));
             }
             else
             {
@@ -622,6 +626,12 @@ namespace Cordova.Extension.Commands
 
                     Scanner.MWBgetScanningRect(Scanner.MWB_CODE_MASK_MSI, out left, out top, out rWidth, out rHeight);
                     scanningRects.Add(Scanner.MWB_CODE_MASK_MSI, new float[] { left, top, rWidth, rHeight });
+
+                    Scanner.MWBgetScanningRect(Scanner.MWB_CODE_MASK_MAXICODE, out left, out top, out rWidth, out rHeight);
+                    scanningRects.Add(Scanner.MWB_CODE_MASK_MAXICODE, new float[] { left, top, rWidth, rHeight });
+
+                    Scanner.MWBgetScanningRect(Scanner.MWB_CODE_MASK_POSTAL, out left, out top, out rWidth, out rHeight);
+                    scanningRects.Add(Scanner.MWB_CODE_MASK_POSTAL, new float[] { left, top, rWidth, rHeight });
 
                 }
                 else

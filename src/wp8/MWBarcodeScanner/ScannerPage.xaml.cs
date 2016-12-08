@@ -493,8 +493,12 @@ namespace BarcodeScannerPage
                         {
                             typeName = typeName + " (HIBC)";
                         }
+                        else if (param_parserMask == Scanner.MWP_PARSER_MASK_SCM)
+                        {
+                            typeName = typeName + " (SCM)";
+                        }
 
-                      
+
 
                     }
 

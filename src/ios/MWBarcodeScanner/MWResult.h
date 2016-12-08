@@ -37,6 +37,7 @@
 @property (readwrite) int imageWidth;
 @property (readwrite) int imageHeight;
 @property (readwrite) bool isGS1;
+@property (readwrite) bool isKanji;
 @property (nonatomic, retain) MWLocation *locationPoints;
 
 

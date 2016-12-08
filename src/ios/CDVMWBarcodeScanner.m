@@ -49,7 +49,8 @@ NSMutableDictionary *recgtVals;
     
     if (![self.viewController.view viewWithTag:9158436]) {
         recgtVals = nil;
-        
+        [MWOverlay setPaused:NO];
+
         currentOrientation = [[UIApplication sharedApplication]statusBarOrientation];
         scannerViewController = [[MWScannerViewController alloc] initWithNibName:@"MWScannerViewController" bundle:nil];
         scannerViewController.delegate = self;
@@ -60,72 +61,17 @@ NSMutableDictionary *recgtVals;
                                                  selector:@selector(didRotate:)
                                                      name:@"UIDeviceOrientationDidChangeNotification" object:nil];
         
-       
-        leftP   =[[command.arguments objectAtIndex:0]floatValue];
-        topP    =[[command.arguments objectAtIndex:1]floatValue];
-        widthP  =[[command.arguments objectAtIndex:2]floatValue];
-        heightP =[[command.arguments objectAtIndex:3]floatValue];
-        
-        float x =  leftP /100 * [[UIScreen mainScreen] bounds].size.width;
-        float y =  topP /100 * [[UIScreen mainScreen] bounds].size.height;
-        
-        float width = widthP /100 *[[UIScreen mainScreen] bounds].size.width;
-        float height =heightP /100 *[[UIScreen mainScreen] bounds].size.height;
-        
-        
-        UIView *view = [[UIView alloc]initWithFrame:CGRectMake(x,y,width,height)];
+
+        UIView *view = [[UIView alloc] init];
         [view setTag:9158436];
+        [self.viewController.view addSubview:view];
         
-        scannerPreviewLayer = [scannerViewController generateLayerWithRect:CGPointMake(width, height)];
-        
+        [self resizePartialScanner:command];
     
         
-        
-        
-        [view.layer addSublayer:scannerPreviewLayer];
-        
-        [self.viewController.view addSubview:view];
         scannerViewController.state = LAUNCHING_CAMERA;
         [scannerViewController.captureSession startRunning];
         scannerViewController.state = CAMERA;
-        [CDVMWBarcodeScanner setAutoRect:scannerPreviewLayer];
-        overlayImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width, height)];
-        overlayImage.contentMode = UIViewContentModeScaleToFill;
-        overlayImage.image = [UIImage imageNamed:@"overlay_mw.png"];
-        [view addSubview:overlayImage];
-        [overlayImage setHidden:YES];
-        
-        if ([MWScannerViewController getOverlayMode] == 1) {
-            [MWOverlay setPaused:NO];
-            [MWOverlay addToPreviewLayer:scannerPreviewLayer];
-        }else if([MWScannerViewController getOverlayMode] == 2){
-            [overlayImage setHidden:NO];
-        }
-        if ([MWScannerViewController isFlashEnabled]) {
-            scannerViewController.flashButton = [[UIButton alloc]initWithFrame:CGRectMake(view.frame.size.width-10-35, 10, 35, 35)];
-            [scannerViewController.flashButton setImage:[UIImage imageNamed:@"flashbuttonoff.png"] forState:UIControlStateNormal];
-            [scannerViewController.flashButton setImage:[UIImage imageNamed:@"flashbuttonon.png"] forState:UIControlStateSelected];
-            [scannerViewController.flashButton setSelected:NO];
-            [scannerViewController.flashButton setHidden:NO];
-            [scannerViewController.flashButton setBackgroundImage:nil forState:UIControlStateSelected];
-            [scannerViewController.flashButton setBackgroundImage:nil forState:UIControlStateNormal];
-            [scannerViewController.flashButton addTarget:scannerViewController action:@selector(doFlashToggle:) forControlEvents:UIControlEventTouchUpInside];
-            [view addSubview:scannerViewController.flashButton];
-            
-        }
-        
-        if ([MWScannerViewController isZoomEnabled]) {
-            scannerViewController.zoomButton = [[UIButton alloc]initWithFrame:CGRectMake(10, 10, 35, 35)];
-            [scannerViewController.zoomButton setImage:[UIImage imageNamed:@"zoom.png"] forState:UIControlStateNormal];
-            [scannerViewController.zoomButton setHidden:NO];
-            [scannerViewController.zoomButton setBackgroundImage:nil forState:UIControlStateNormal];
-            [scannerViewController.zoomButton addTarget:scannerViewController action:@selector(doZoomToggle:) forControlEvents:UIControlEventTouchUpInside];
-            [view addSubview:scannerViewController.zoomButton];
-            
-        }
-        if (leftP == 0 && topP == 0 && widthP == 1 && heightP == 1) {
-            [view setHidden:YES];
-        }
         
 #if !__has_feature(objc_arc)
         callbackId= [command.callbackId retain];
@@ -137,6 +83,89 @@ NSMutableDictionary *recgtVals;
     }
     
 }
+- (void)resizePartialScanner:(CDVInvokedUrlCommand*)command
+{
+    
+    if ([self.viewController.view viewWithTag:9158436]) {
+        leftP   =[[command.arguments objectAtIndex:0]floatValue];
+        topP    =[[command.arguments objectAtIndex:1]floatValue];
+        widthP  =[[command.arguments objectAtIndex:2]floatValue];
+        heightP =[[command.arguments objectAtIndex:3]floatValue];
+        
+        float x =  leftP /100 * [[UIScreen mainScreen] bounds].size.width;
+        float y =  topP /100 * [[UIScreen mainScreen] bounds].size.height;
+        
+        float width = widthP /100 *[[UIScreen mainScreen] bounds].size.width;
+        float height =heightP /100 *[[UIScreen mainScreen] bounds].size.height;
+        
+        UIView *view = [self.viewController.view viewWithTag:9158436];
+        
+        if (!scannerPreviewLayer) {
+            scannerPreviewLayer = [scannerViewController generateLayerWithRect:CGPointMake(width, height)];
+            [view.layer addSublayer:scannerPreviewLayer];
+        }
+        
+        [CDVMWBarcodeScanner setAutoRect:scannerPreviewLayer];
+        
+
+        if (leftP == 0 && topP == 0 && widthP == 1 && heightP == 1) {
+            [view setHidden:YES];
+        } else {
+            [view setHidden:NO];
+        }
+        
+        
+        view.frame = CGRectMake(x,y,width,height);
+        [scannerPreviewLayer setFrame:CGRectMake(0, 0, width, height)];
+        if ([MWScannerViewController getOverlayMode] == 1) {
+            [MWOverlay removeFromPreviewLayer];
+            [MWOverlay addToPreviewLayer:scannerPreviewLayer];
+        }else if([MWScannerViewController getOverlayMode] == 2){
+            if (!overlayImage) {
+                overlayImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width, height)];
+                overlayImage.contentMode = UIViewContentModeScaleToFill;
+                overlayImage.image = [UIImage imageNamed:@"overlay_mw.png"];
+            }
+            if(![view viewWithTag:1111]){
+                [overlayImage setTag:1111];
+                [view addSubview:overlayImage];
+            }
+            [overlayImage setFrame:CGRectMake(0, 0, width, height)];
+            [overlayImage setHidden:NO];
+        }
+        
+        if ([MWScannerViewController isFlashEnabled] && [scannerViewController.device isTorchModeSupported:AVCaptureTorchModeOn]) {
+            if (!scannerViewController.flashButton) {
+                scannerViewController.flashButton = [[UIButton alloc]init];
+                [scannerViewController.flashButton setImage:[UIImage imageNamed:@"flashbuttonoff.png"] forState:UIControlStateNormal];
+                [scannerViewController.flashButton setImage:[UIImage imageNamed:@"flashbuttonon.png"] forState:UIControlStateSelected];
+                [scannerViewController.flashButton setBackgroundImage:nil forState:UIControlStateSelected];
+                [scannerViewController.flashButton setBackgroundImage:nil forState:UIControlStateNormal];
+                [scannerViewController.flashButton addTarget:scannerViewController action:@selector(doFlashToggle:) forControlEvents:UIControlEventTouchUpInside];
+                [scannerViewController.flashButton setSelected:NO];
+                [scannerViewController.flashButton setHidden:NO];
+                [view addSubview:scannerViewController.flashButton];
+            }
+            
+            [scannerViewController.flashButton setFrame:CGRectMake(view.frame.size.width-10-35, 10, 35, 35)];
+        }
+        
+        if ([MWScannerViewController isZoomEnabled]) {
+            if (!scannerViewController.zoomButton) {
+                scannerViewController.zoomButton = [[UIButton alloc]init];
+                [scannerViewController.zoomButton setImage:[UIImage imageNamed:@"zoom.png"] forState:UIControlStateNormal];
+                [scannerViewController.zoomButton setHidden:NO];
+                [scannerViewController.zoomButton setBackgroundImage:nil forState:UIControlStateNormal];
+                [scannerViewController.zoomButton addTarget:scannerViewController action:@selector(doZoomToggle:) forControlEvents:UIControlEventTouchUpInside];
+                [view addSubview:scannerViewController.zoomButton];
+            }
+            [scannerViewController.zoomButton setFrame:CGRectMake(10, 10, 35, 35)];
+        }
+
+        
+    }
+}
+
 - (void)startScanner:(CDVInvokedUrlCommand*)command
 {
     [self stopScanner:command];
@@ -225,11 +254,7 @@ NSMutableDictionary *recgtVals;
         if (obj.succeeded)
         {
             if ([MWScannerViewController getCloseScannerOnDecode]) {
-                if ([self.viewController.view viewWithTag:9158436]) {
-                    [[self.viewController.view viewWithTag:9158436]removeFromSuperview];
-                    [scannerViewController stopScanning];
-                    
-                }
+                [self stopScanner:nil];
             }
             
             [self scanningFinished:obj.result.text withType: obj.result.typeName isGS1:obj.result.isGS1  andRawResult: [[NSData alloc] initWithBytes: obj.result.bytes length: obj.result.bytesLength] locationPoints:obj.result.locationPoints imageWidth:obj.result.imageWidth imageHeight:obj.result.imageHeight];
@@ -253,7 +278,7 @@ NSMutableDictionary *recgtVals;
         p2.y = tmp;
     }
     
-    int masks[14] = {
+    int masks[16] = {
         MWB_CODE_MASK_25,
         MWB_CODE_MASK_39,
         MWB_CODE_MASK_93,
@@ -267,7 +292,9 @@ NSMutableDictionary *recgtVals;
         MWB_CODE_MASK_CODABAR,
         MWB_CODE_MASK_DOTCODE,
         MWB_CODE_MASK_11,
-        MWB_CODE_MASK_MSI
+        MWB_CODE_MASK_MSI,
+        MWB_CODE_MASK_MAXICODE,
+        MWB_CODE_MASK_POSTAL
     };
     
     
@@ -278,7 +305,7 @@ NSMutableDictionary *recgtVals;
         p2.x -= 0.02;
         p2.y -= 0.02;
         
-        for (int i = 0; i<14; i++) {
+        for (int i = 0; i<16; i++) {
             MWB_setScanningRect(masks[i], p1.x  *100, p1.y * 100, (p2.x - p1.x) * 100, (p2.y - p1.y) * 100);
         }
         
@@ -287,7 +314,7 @@ NSMutableDictionary *recgtVals;
         if (!recgtVals) {
             recgtVals = [[NSMutableDictionary alloc]init];
             
-            for (int i =0; i<14; i++) {
+            for (int i =0; i<16; i++) {
                 
                 float left,top,width,height;
                 MWB_getScanningRect(masks[i], &left, &top, &width, &height);
@@ -297,14 +324,14 @@ NSMutableDictionary *recgtVals;
             
         }else{
             
-            for (int i = 0 ; i<14; i++) {
+            for (int i = 0 ; i<16; i++) {
                 
                 NSArray *rectVals = [[NSArray alloc] initWithArray:[recgtVals objectForKey:[NSNumber numberWithInt:masks[i]]]];
                 MWB_setScanningRect(masks[i],[[rectVals objectAtIndex:0]intValue], [[rectVals objectAtIndex:1]intValue], [[rectVals objectAtIndex:2]intValue], [[rectVals objectAtIndex:3]intValue]);
             }
             
         }
-        for (int i = 0 ; i<14; i++) {
+        for (int i = 0 ; i<16; i++) {
             
             float left,top,width,height;
             MWB_getScanningRect(masks[i], &left, &top, &width, &height);

@@ -1,5 +1,24 @@
 /*
-    Version 2.0.2
+    Version 2.1.0
+	
+	- Pause mode
+    - Resize option
+    - Bug fixes
+	- Decoder updated to 3.1.0
+		- Added support for three additional Code 25 variants: Matrix, COOP, and Inverted
+		- Added support for MaxiCode symbology
+		- Added support for Micro QR symbology
+		- Added support for POSTNET, PLANET, IMB, and Royal Mail postal codes
+		- Added support for Kanji for both Standard and Micro QR codes
+		- Added support for GS1 DotCode
+		- Added Structured Carrier Message (MaxiCode) to Parser Plugin.
+		- Greatly improved decoding performance for low-light or unevenly lit barcodes
+		- Improved Direct Part Marking (DPM) detection for Data Matrix barcodes
+		- Improved performance of the PDF417 decoder
+		- Improved performance of the Data Matrix decoder
+		- Improved performance for Code 25 detection
+	
+	Version 2.0.2
 
     - Decoding library updated to 3.0
     - The registration functions have been revamped. License credentials issued prior to version 3.0 will no longer work with this and future releases.
@@ -239,6 +258,8 @@
      /** @brief  Global decoder flags value: apply rotation on input image
         */
      MWB_CFG_GLOBAL_ROTATE90 :                       0x04,
+     MWB_CFG_GLOBAL_ROTATE180:                       0x08,
+
 
     
      /** @brief  Global decoder flags value: calculate location for 1D barcodeTypes (Code128, Code93, Code39 supported)
@@ -247,7 +268,17 @@
         
     /** @brief  Global decoder flags value: fail 1D decode if result is not confirmed by location expanding (Code128, Code93, Code39 supported)
       */
-     MWB_CFG_GLOBAL_VEIRIFY_1D_LOCATION    :   0x20,
+     MWB_CFG_GLOBAL_VERIFY_1D_LOCATION    :   0x20,
+     /** @brief  Global decoder flags value: fail decode if result is not touching the center of viewfinder (2D + Code128, Code93, Code39 supported)
+    * 1D locaiton flags will be enabled automatically with this one
+     */
+     MWB_CFG_GLOBAL_USE_CENTRIC_SCANNING  :   0x40,
+
+     /** @brief  Code39 decoder flags value: require checksum check
+    */
+     MWB_CFG_CODE39_REQ_CHKSUM            :    0x2,
+    /**/
+
      
      /**
         * @name Bit mask identifiers for supported decoder types
@@ -267,6 +298,8 @@
      MWB_CODE_MASK_DOTCODE :          0x00000800,
      MWB_CODE_MASK_11 :               0x00001000,
      MWB_CODE_MASK_MSI :              0x00002000,
+     MWB_CODE_MASK_MAXICODE:          0x00004000,
+     MWB_CODE_MASK_POSTAL:            0x00008000,
      MWB_CODE_MASK_ALL :              0xffffffff,
      /** @} */
 
@@ -288,9 +321,18 @@
         * @name Bit mask identifiers for RSS decoder types
         * @{ */
      MWB_SUBC_MASK_RSS_14 :           0x00000001,
+     MWB_SUBC_MASK_RSS_14_STACK :     0x00000002,
      MWB_SUBC_MASK_RSS_LIM :          0x00000004,
      MWB_SUBC_MASK_RSS_EXP :          0x00000008,
      /** @} */
+     
+     /**
+      * @name Bit mask identifiers for QR decoder types
+      * @{ */
+     MWB_SUBC_MASK_QR_STANDARD :      0x00000001,
+     MWB_SUBC_MASK_QR_MICRO    :      0x00000002,
+     /** @} */
+
      
      /**
         * @name Bit mask identifiers for Code 2 of 5 decoder types
@@ -298,7 +340,23 @@
      MWB_SUBC_MASK_C25_INTERLEAVED :  0x00000001,
      MWB_SUBC_MASK_C25_STANDARD :     0x00000002,
      MWB_SUBC_MASK_C25_ITF14 :        0x00000004,
+     MWB_SUBC_MASK_C25_IATA  :        0x00000008,
+     MWB_SUBC_MASK_C25_MATRIX :       0x00000010,
+     MWB_SUBC_MASK_C25_COOP   :       0x00000020,
+     MWB_SUBC_MASK_C25_INVERTED:      0x00000040,
+
      /** @} */
+     
+     /**
+      * @name Bit mask identifiers for POSTAL decoder types
+      * @{ */
+     MWB_SUBC_MASK_POSTAL_POSTNET :   0x00000001,
+     MWB_SUBC_MASK_POSTAL_PLANET  :   0x00000002,
+     MWB_SUBC_MASK_POSTAL_IM      :   0x00000004,
+     MWB_SUBC_MASK_POSTAL_ROYAL   :   0x00000008,
+     
+     /** @} */
+
      
      /**
         * @name Bit mask identifiers for UPC/EAN decoder types
@@ -307,6 +365,7 @@
      MWB_SUBC_MASK_EANUPC_EAN_8 :     0x00000002,
      MWB_SUBC_MASK_EANUPC_UPC_A :     0x00000004,
      MWB_SUBC_MASK_EANUPC_UPC_E :     0x00000008,
+	 MWB_SUBC_MASK_EANUPC_UPC_E1 :    0x00000010,
      /** @} */
      
      /**
@@ -343,6 +402,18 @@
      FOUND_11 :    22,
      FOUND_MSI :    23,
      FOUND_25_IATA :    24,
+     FOUND_25_MATRIX: 25,
+     FOUND_25_COOP: 26,
+     FOUND_25_INVERTED: 27,
+     FOUND_QR_MICRO: 28,
+     FOUND_MAXICODE: 29,
+     FOUND_POSTNET: 30,
+     FOUND_PLANET: 31,
+     FOUND_IMB: 32,
+     FOUND_ROYALMAIL: 33,
+     
+     
+     
      OrientationPortrait :         'Portrait',
      OrientationLandscapeLeft :    'LandscapeLeft',
      OrientationLandscapeRight :   'LandscapeRight',
@@ -356,16 +427,17 @@
                
                
                
-               /**
-                * @name Bit mask identifiers for supported decoder types
-                * @{ */
-               MWP_PARSER_MASK_NONE :               0x00000000,
-               MWP_PARSER_MASK_GS1  :               0x00000001,
-               MWP_PARSER_MASK_IUID :               0x00000002,
-               MWP_PARSER_MASK_ISBT :               0x00000004,
-               MWP_PARSER_MASK_AAMVA:               0x00000008,
-               MWP_PARSER_MASK_HIBC :               0x00000010,
-               MWP_PARSER_MASK_AUTO :               0x0fffffff
+   /**
+    * @name Bit mask identifiers for supported decoder types
+    * @{ */
+   MWP_PARSER_MASK_NONE :               0x00000000,
+   MWP_PARSER_MASK_GS1  :               0x00000001,
+   MWP_PARSER_MASK_IUID :               0x00000002,
+   MWP_PARSER_MASK_ISBT :               0x00000004,
+   MWP_PARSER_MASK_AAMVA:               0x00000008,
+   MWP_PARSER_MASK_HIBC :               0x00000010,
+   MWP_PARSER_MASK_SCM  :               0x00000020,
+   MWP_PARSER_MASK_AUTO :               0x0fffffff
 
 /** @} */
 
@@ -634,105 +706,114 @@ MWBtoggleZoom: function() {
      */
  MWBsetCustomParam: function(key, value) {
     cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "setCustomParam", [key, value]);
-               },
-               
-               
-    /**
-    * Enable/disable continuous scanning. If 'shouldClose' is 'false', result callback will be performed and
-    * scanner will be paused. The User can call 'resumeScanning' to continue scanning, or 'closeScanner'
-    * for closing the scanner. Default is 'true'.
-    * Function is not available on WP8 due to the technical limitations.
-    */
-    MWBcloseScannerOnDecode: function(shouldClose) {
-    cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "closeScannerOnDecode", [shouldClose]);
-    },
-    /**
-    * Resume scanning. Use this method if already using MWBcloseScannerOnDecode(false).
-    * Function is not available on WP8 due to the technical limitations.
-    */
-    MWBresumeScanning: function() {
-    cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "resumeScanning", []);
-    },
-    /**
-    * Close scanner. Use this method if already using MWBcloseScannerOnDecode(false).
-    * Function is not available on WP8 due to the technical limitations.
-    */
-    MWBcloseScanner: function() {
-    cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "closeScanner", []);
-    },
-   /**
-    * Use 60 fps when available.
-    * Function is only available on iOS.
-    * Default is 'false'
-    */
-   MWBuse60fps: function(use) {
-   cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "use60fps", [use]);
-   },
-   /**
-    * Scan image.
-    * imageURI - path to the image to be scanned.
-    */
-   MWBscanImage: function(imageURI, callback) {
-   cordova.exec(callback, function(){}, "MWBarcodeScanner", "scanImage", [imageURI]);
-   },
-   /**
-    * Set custom decoder param.
-    * MWB_setParam set custom decoder param id/value pair for decoder type specified in \a codeMask.
-    * codeMask                Single decoder type (MWB_CODE_MASK_...)
-    * paramId                 ID of param
-    * paramValue              Integer value of param
-    */
-   MWBsetParam: function(codeMask, paramId, paramValue) {
-       cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "setParam", [codeMask, paramId, paramValue]);
-   },
-   /**
-    * Pause scanner view
-    */
-   MWBtogglePauseResume: function() {
-       cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "togglePauseResume", []);
-   },
-   /**
-    *  Ignore result if scanned the same code in continuous scanning mode
-    *  
-    *  delay         Time interval between 2 scan results with the same result.code in milliseconds
-    */
-   MWBduplicateCodeDelay: function(delay) {
-       cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "duplicateCodeDelay", [delay]);
-   },
-   /**
-    *  Use auto generated full screen scanning rectangle, or use user defined scanning rectangles
-    *
-    *  useAutoRect   Whether or not to use auto generated full screen scanning rectangle, or use user defined scanning rectangles [true, false]; default: true
-    */
-   MWBuseAutoRect: function(useAutoRect) {
-       cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "setUseAutorect", [useAutoRect]);
-   },
-   /**
-    *  Use front facing camera
-    *
-    *  useFrontCamera   Whether or not to use front facing camera [true, false]; default: false
-    */
-   MWBuseFrontCamera: function(useFrontCamera) {
-        cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "useFrontCamera", [useFrontCamera]);
-   },
-   /**
-    *  Set active parser type
-    *
-    *  activeParser  Available options:
-    *                   MWP_PARSER_MASK_NONE
-    *                   MWP_PARSER_MASK_AUTO
-    *                   MWP_PARSER_MASK_GS1
-    *                   MWP_PARSER_MASK_IUID
-    *                   MWP_PARSER_MASK_ISBT
-    *                   MWP_PARSER_MASK_AAMVA
-    *                   MWP_PARSER_MASK_HIBC
-    *
-    */
-   MWBsetActiveParser: function(activeParser) {
-        cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "setActiveParser", [activeParser]);
-   }
- 
- };
+ },           
+       
+           
+/**
+* Enable/disable continuous scanning. If 'shouldClose' is 'false', result callback will be performed and
+* scanner will be paused. The User can call 'resumeScanning' to continue scanning, or 'closeScanner'
+* for closing the scanner. Default is 'true'.
+* Function is not available on WP8 due to the technical limitations.
+*/
+MWBcloseScannerOnDecode: function(shouldClose) {
+cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "closeScannerOnDecode", [shouldClose]);
+},
+/**
+* Resume scanning. Use this method if already using MWBcloseScannerOnDecode(false).
+* Function is not available on WP8 due to the technical limitations.
+*/
+MWBresumeScanning: function() {
+cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "resumeScanning", []);
+},
+/**
+* Close scanner. Use this method if already using MWBcloseScannerOnDecode(false).
+* Function is not available on WP8 due to the technical limitations.
+*/
+MWBcloseScanner: function() {
+cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "closeScanner", []);
+},
+/**
+* Use 60 fps when available.
+* Function is only available on iOS.
+* Default is 'false'
+*/
+MWBuse60fps: function(use) {
+cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "use60fps", [use]);
+},
+/**
+* Scan image.
+* imageURI - path to the image to be scanned.
+*/
+MWBscanImage: function(imageURI, callback) {
+cordova.exec(callback, function(){}, "MWBarcodeScanner", "scanImage", [imageURI]);
+},
+/**
+* Set custom decoder param.
+* MWB_setParam set custom decoder param id/value pair for decoder type specified in \a codeMask.
+* codeMask                Single decoder type (MWB_CODE_MASK_...)
+* paramId                 ID of param
+* paramValue              Integer value of param
+*/
+MWBsetParam: function(codeMask, paramId, paramValue) {
+   cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "setParam", [codeMask, paramId, paramValue]);
+},
+/**
+* Pause scanner view
+*/
+MWBtogglePauseResume: function() {
+   cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "togglePauseResume", []);
+},
+/**
+*  Ignore result if scanned the same code in continuous scanning mode
+*  
+*  delay         Time interval between 2 scan results with the same result.code in milliseconds
+*/
+MWBduplicateCodeDelay: function(delay) {
+   cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "duplicateCodeDelay", [delay]);
+},
+/**
+*  Use auto generated full screen scanning rectangle, or use user defined scanning rectangles
+*
+*  useAutoRect   Whether or not to use auto generated full screen scanning rectangle, or use user defined scanning rectangles [true, false]; default: true
+*/
+MWBuseAutoRect: function(useAutoRect) {
+   cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "setUseAutorect", [useAutoRect]);
+},
+/**
+*  Use front facing camera
+*
+*  useFrontCamera   Whether or not to use front facing camera [true, false]; default: false
+*/
+MWBuseFrontCamera: function(useFrontCamera) {
+    cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "useFrontCamera", [useFrontCamera]);
+},
+/**
+*  Set active parser type
+*
+*  activeParser  Available options:
+*                   MWP_PARSER_MASK_NONE
+*                   MWP_PARSER_MASK_AUTO
+*                   MWP_PARSER_MASK_GS1
+*                   MWP_PARSER_MASK_IUID
+*                   MWP_PARSER_MASK_ISBT
+*                   MWP_PARSER_MASK_AAMVA
+*                   MWP_PARSER_MASK_HIBC
+*                   MWP_PARSER_MASK_SCM
+*
+*/
+MWBsetActiveParser: function(activeParser) {
+    cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "setActiveParser", [activeParser]);
+},
+/**
+*  Resize partial scanner view
+*
+*  x, y, width, height (percentage of screen size)
+*/
+MWBresizePartialScanner: function(x, y, width, height) {
+    cordova.exec(function(){}, function(){}, "MWBarcodeScanner", "resizePartialScanner", [x, y, width, height]);
+}
+
+};
  
 scanner = {};
 
@@ -757,6 +838,9 @@ scanner.setScannerOverlayMode = function(overlayMode){
 
 scanner.setBlinkingLineVisible = function(visible){
     BarcodeScanner.MWBsetBlinkingLineVisible(visible);
+}
+scanner.resizePartialScanner = function(x,y,width,height){
+    BarcodeScanner.MWBresizePartialScanner(x,y,width,height);
 }
 
 
