@@ -268,7 +268,7 @@ public class BarcodeScannerPlugin extends CordovaPlugin implements SurfaceHolder
             } else {
                 cordova.requestPermission(this, 234, Manifest.permission.CAMERA);
             }
-            MWOverlay.setPaused(false);
+            MWOverlay.setPaused(this.cordova.getActivity(), false);
             return true;
 
         } else if ("startScannerView".equals(action)) {
@@ -294,13 +294,13 @@ public class BarcodeScannerPlugin extends CordovaPlugin implements SurfaceHolder
                 if (ScannerActivity.state != State.STOPPED) {
                     ScannerActivity.state = State.STOPPED;
                     if (ScannerActivity.param_OverlayMode == 1) {
-                        MWOverlay.setPaused(true);
+                        MWOverlay.setPaused(this.cordova.getActivity(), true);
                     }
                 } else {
 
                     ScannerActivity.state = State.PREVIEW;
                     if (ScannerActivity.param_OverlayMode == 1) {
-                        MWOverlay.setPaused(false);
+                        MWOverlay.setPaused(this.cordova.getActivity(), false);
                     }
                 }
             }
@@ -513,7 +513,7 @@ public class BarcodeScannerPlugin extends CordovaPlugin implements SurfaceHolder
 
             ScannerActivity.state = State.PREVIEW;
             if (ScannerActivity.param_OverlayMode == ScannerActivity.OM_MW) {
-                MWOverlay.setPaused(false);
+                MWOverlay.setPaused(this.cordova.getActivity(), false);
             }
             return true;
 
@@ -1216,109 +1216,6 @@ public class BarcodeScannerPlugin extends CordovaPlugin implements SurfaceHolder
             }
         }
 
-        int bcType = result.type;
-        String typeName = "";
-        switch (bcType) {
-            case BarcodeScanner.FOUND_25_INTERLEAVED:
-                typeName = "Code 25";
-                break;
-            case BarcodeScanner.FOUND_25_STANDARD:
-                typeName = "Code 25 Standard";
-                break;
-            case BarcodeScanner.FOUND_128:
-                typeName = "Code 128";
-                break;
-            case BarcodeScanner.FOUND_39:
-                typeName = "Code 39";
-                break;
-            case BarcodeScanner.FOUND_93:
-                typeName = "Code 93";
-                break;
-            case BarcodeScanner.FOUND_AZTEC:
-                typeName = "AZTEC";
-                break;
-            case BarcodeScanner.FOUND_DM:
-                typeName = "Datamatrix";
-                break;
-            case BarcodeScanner.FOUND_EAN_13:
-                typeName = "EAN 13";
-                break;
-            case BarcodeScanner.FOUND_EAN_8:
-                typeName = "EAN 8";
-                break;
-            case BarcodeScanner.FOUND_NONE:
-                typeName = "None";
-                break;
-            case BarcodeScanner.FOUND_RSS_14:
-                typeName = "Databar 14";
-                break;
-            case BarcodeScanner.FOUND_RSS_14_STACK:
-                typeName = "Databar 14 Stacked";
-                break;
-            case BarcodeScanner.FOUND_RSS_EXP:
-                typeName = "Databar Expanded";
-                break;
-            case BarcodeScanner.FOUND_RSS_LIM:
-                typeName = "Databar Limited";
-                break;
-            case BarcodeScanner.FOUND_UPC_A:
-                typeName = "UPC A";
-                break;
-            case BarcodeScanner.FOUND_UPC_E:
-                typeName = "UPC E";
-                break;
-            case BarcodeScanner.FOUND_PDF:
-                typeName = "PDF417";
-                break;
-            case BarcodeScanner.FOUND_QR:
-                typeName = "QR";
-                break;
-            case BarcodeScanner.FOUND_CODABAR:
-                typeName = "Codabar";
-                break;
-            case BarcodeScanner.FOUND_128_GS1:
-                typeName = "Code 128 GS1";
-                break;
-            case BarcodeScanner.FOUND_ITF14:
-                typeName = "ITF 14";
-                break;
-            case BarcodeScanner.FOUND_11:
-                typeName = "Code 11";
-                break;
-            case BarcodeScanner.FOUND_MSI:
-                typeName = "MSI Plessey";
-                break;
-            case BarcodeScanner.FOUND_25_IATA:
-                typeName = "IATA Code 25";
-                break;
-            case BarcodeScanner.FOUND_25_MATRIX:
-                typeName = "25 Matrix";
-                break;
-            case BarcodeScanner.FOUND_25_COOP:
-                typeName = "25 Coop";
-                break;
-            case BarcodeScanner.FOUND_25_INVERTED:
-                typeName = "25 Inverted";
-                break;
-            case BarcodeScanner.FOUND_QR_MICRO:
-                typeName = "QR Micro";
-                break;
-            case BarcodeScanner.FOUND_MAXICODE:
-                typeName = "Maxicode";
-                break;
-            case BarcodeScanner.FOUND_POSTNET:
-                typeName = "Postnet";
-                break;
-            case BarcodeScanner.FOUND_PLANET:
-                typeName = "Planet";
-                break;
-            case BarcodeScanner.FOUND_IMB:
-                typeName = "IMB";
-                break;
-            case BarcodeScanner.FOUND_ROYALMAIL:
-                typeName = "Royal Mail";
-        }
-
         if (result.locationPoints != null && CameraManager.get()
                                                           .getCurrentResolution() != null && ScannerActivity.param_OverlayMode == ScannerActivity.OM_MW) {
             MWOverlay.showLocation(result.locationPoints.points, result.imageWidth, result.imageHeight);
@@ -1327,7 +1224,7 @@ public class BarcodeScannerPlugin extends CordovaPlugin implements SurfaceHolder
         JSONObject jsonResult = new JSONObject();
         try {
             jsonResult.put("code", s);
-            jsonResult.put("type", typeName);
+            jsonResult.put("type", result.typeName);
             jsonResult.put("isGS1", result.isGS1);
             jsonResult.put("imageWidth", result.imageWidth);
             jsonResult.put("imageHeight", result.imageHeight);
@@ -1388,6 +1285,7 @@ public class BarcodeScannerPlugin extends CordovaPlugin implements SurfaceHolder
                     scrollView = null;
                     overlayImage = null;
                     flashButton = null;
+                    ScannerActivity.handler = null;
                 }
             });
 
@@ -1543,7 +1441,7 @@ public class BarcodeScannerPlugin extends CordovaPlugin implements SurfaceHolder
                                                                                                                     if (ScannerActivity.param_OverlayMode == 1) {
                                                                                                                         MWOverlay.removeOverlay();
                                                                                                                         MWOverlay.addOverlay(cordova.getActivity(), surfaceView);
-                                                                                                                        MWOverlay.setPaused(false);
+                                                                                                                        MWOverlay.setPaused(cordova.getActivity(), false);
                                                                                                                     }
                                                                                                                 }
                                                                                                             }
@@ -1566,7 +1464,7 @@ public class BarcodeScannerPlugin extends CordovaPlugin implements SurfaceHolder
         if (cordova.hasPermission(Manifest.permission.CAMERA)) {
             if (rlFullScreen == null) {
 
-                MWOverlay.setPaused(false);
+                MWOverlay.setPaused(this.cordova.getActivity(), false);
                 rects = null;
 
                 cordova.getActivity().runOnUiThread(new Runnable() {

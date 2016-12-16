@@ -92,6 +92,7 @@ MWBSInitSpace.init = function(mwbs,constants,dvc){
                   //  mwbs['MWBuseAutoRect'](false);      
                   //  mwbs['MWBuseFrontCamera'](true);
                   //  mwbs['MWBsetActiveParser'](constants.MWP_PARSER_MASK_ISBT);
+                  //  mwbs['MWBsetPauseMode'](constants.PM_NONE);
 
 
                     // console.log('JS Settings ends: '+ (new Date()).getTime());
