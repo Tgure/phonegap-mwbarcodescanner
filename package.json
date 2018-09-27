@@ -3,7 +3,7 @@
   "version": "1.9.1",
   "description": "Manatee Works Barcode Scanner Plugin",
   "cordova": {
-    "id": "manateeworks-barcodescanner",
+    "id": "manateeworks-barcodescanner-fork",
     "platforms": [
       "android",
       "ios",
