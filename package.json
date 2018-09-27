@@ -1,5 +1,5 @@
 {
-  "name": "manateeworks-barcodescanner",
+  "name": "manateeworks-barcodescanner-fork",
   "version": "1.9.1",
   "description": "Manatee Works Barcode Scanner Plugin",
   "cordova": {
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tgure/phonegap-mwbarcodescanner.git"
+    "url": "git+https://github.com/manateeworks/phonegap-mwbarcodescanner.git"
   },
   "nativescript": {
     "platforms": {
@@ -32,7 +32,7 @@
   "author": "Manatee Works",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Tgure/phonegap-mwbarcodescanner/issues"
+    "url": "https://github.com/manateeworks/phonegap-mwbarcodescanner/issues"
   },
-  "homepage": "https://github.com/Tgure/phonegap-mwbarcodescanner#readme"
+  "homepage": "https://github.com/manateeworks/phonegap-mwbarcodescanner#readme"
 }
